@@ -20,7 +20,7 @@ Las siguientes capturas corresponden a la aplicación ejecutándose en un teléf
 
 ### Movimientos
 
-![Lista de movimientos de Pikachu](docs/screenshots/04-moves.jpg)
+![Lista de movimientos de Pikachu](docs/screenshots/06-compare.jpg)
 
 ### Galería de imágenes
 
@@ -28,7 +28,7 @@ Las siguientes capturas corresponden a la aplicación ejecutándose en un teléf
 
 ### Comparación de Pokémon
 
-![Comparación de Pikachu y Bulbasaur](docs/screenshots/06-compare.jpg)
+![Comparación de Pikachu y Bulbasaur](docs/screenshots/04-moves.jpg)
 
 ## Funcionalidades
 
