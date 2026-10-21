@@ -1,0 +1,46 @@
+:host { --ink: #20243a; --muted: #9296a7; --paper: #fff; display: block; }
+.topbar ion-toolbar { --background: #fbfaf6; --color: var(--ink); --min-height: 52px; }
+.topbar ion-title { font-size: 15px; font-weight: 700; }
+.detail-content { --background: #fbfaf6; }
+.pokemon-search-wrap { position: relative; z-index: 5; padding: 10px 16px 0; background: #fbfaf6; }
+.pokemon-search { --background: #fff; --border-radius: 15px; --box-shadow: 0 4px 18px #24233a0c; --icon-color: #8e93a6; --placeholder-color: #a1a5b3; min-height: 48px; padding: 0; }
+.pokemon-search::part(input) { font-size: 13px; }
+.search-results { position: absolute; top: 61px; right: 16px; left: 16px; max-height: 320px; overflow-y: auto; border: 1px solid #eff0f4; border-radius: 15px; background: white; box-shadow: 0 14px 32px #24233a1a; }
+.search-result { display: flex; width: 100%; min-height: 46px; align-items: center; gap: 12px; padding: 0 14px; border: 0; border-bottom: 1px solid #f1f2f5; background: white; text-align: left; }
+.search-result:last-child { border-bottom: 0; }.result-number { color: #a1a5b3; font-size: 10px; }.result-name { flex: 1; color: #33384e; font-size: 13px; font-weight: 600; }.search-result ion-icon { color: #a1a5b3; font-size: 15px; }
+.hero { position: relative; min-height: 390px; padding: 18px 24px 0; overflow: hidden; background: var(--type-color, #e8cb12); color: #fff; transition: background .3s ease; }
+.hero-top { position: relative; z-index: 1; height: 305px; }
+.pokedex-label { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border: 1px solid #ffffff65; border-radius: 20px; color: #ffffffd9; font-size: 9px; letter-spacing: 1.4px; }
+.pokedex-label b { color: #fff; font-size: 10px; letter-spacing: .5px; }
+.hero-heading { position: absolute; top: 39px; left: 0; z-index: 2; }
+.hero-heading h1 { margin: 0; font-size: clamp(32px, 8vw, 44px); font-weight: 800; letter-spacing: -.8px; text-shadow: 0 2px 12px #2222; }
+.species { display: block; margin-top: 3px; color: #ffffffcf; font-size: 12px; font-weight: 500; }
+.art-stage { position: absolute; inset: 65px 24px 0; display: grid; place-items: center; }
+.art-glow { position: absolute; top: 59px; left: 50%; width: min(66vw, 250px); height: min(66vw, 250px); transform: translateX(-50%); border-radius: 50%; background: #ffffff21; }
+.pokemon-art { position: relative; z-index: 1; width: min(70vw, 285px); height: min(70vw, 285px); object-fit: contain; filter: drop-shadow(0 14px 12px #2223); }
+.nav-arrow { position: absolute; top: 51%; z-index: 3; display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid #ffffff70; border-radius: 50%; background: #ffffff24; color: white; font-size: 18px; }
+.nav-arrow.previous { left: -8px; }.nav-arrow.next { right: -8px; }
+.hero-wave { position: absolute; z-index: 0; right: -12%; bottom: 23px; left: -12%; height: 102px; border-radius: 50% 50% 0 0 / 24% 24% 0 0; background: #fbfaf6; transform: rotate(-2deg); }
+.hero-bottom { position: relative; z-index: 2; display: flex; min-height: 57px; align-items: center; justify-content: center; }
+.type-list { display: flex; gap: 8px; }
+.type-chip { padding: 7px 14px; border-radius: 20px; background: var(--chip-color, #8793b8); color: white; font-size: 11px; font-weight: 650; box-shadow: 0 5px 14px #20243a18; }
+.sound-button { position: absolute; right: 4px; bottom: 7px; display: grid; width: 46px; height: 46px; place-items: center; border: 0; border-radius: 50%; background: #20243a; color: white; box-shadow: 0 8px 20px #16182b3b; font-size: 20px; }
+.detail-card { position: relative; z-index: 2; min-height: 380px; margin: -1px 16px 24px; padding: 0 18px 22px; border-radius: 22px; background: #fff; box-shadow: 0 9px 30px #24233a0c; }
+.detail-tabs { --background: transparent; border-bottom: 1px solid #edeef2; }
+.detail-tabs ion-segment-button { min-height: 50px; --color: #9b9dac; --color-checked: #282c42; --indicator-color: var(--type-color, #e8cb12); --indicator-height: 3px; font-size: 11px; text-transform: none; letter-spacing: 0; }
+.tab-panel { padding-top: 19px; color: var(--ink); }
+.flavor { margin: 3px 0 18px; color: #72768a; font-size: 13px; line-height: 1.65; }
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.info-tile { display: flex; align-items: center; gap: 11px; min-height: 72px; padding: 12px; border: 1px solid #f0f0f3; border-radius: 14px; background: #fdfdfd; }
+.tile-icon { display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center; border-radius: 12px; background: color-mix(in srgb, var(--type-color, #e8cb12) 15%, white); color: var(--type-color, #b59c00); font-size: 19px; }
+.info-tile small, .info-tile strong { display: block; }.info-tile small { margin-bottom: 4px; color: var(--muted); font-size: 10px; }.info-tile strong { color: var(--ink); font-size: 13px; }
+.tab-panel h2 { margin: 22px 0 11px; font-size: 14px; font-weight: 750; }
+.ability-list { display: flex; flex-wrap: wrap; gap: 8px; }.ability-chip { padding: 8px 12px; border-radius: 10px; background: #f3f4f7; color: #41465c; font-size: 11px; font-weight: 600; }.ability-chip small { color: #969bad; font-weight: 400; }
+.about-footer { display: flex; justify-content: space-between; margin-top: 22px; color: #a0a3b0; font-size: 10px; }
+.stats-total { display: flex; align-items: center; justify-content: space-between; margin: 1px 0 18px; color: #86899a; font-size: 12px; }.stats-total strong { color: var(--ink); font-size: 11px; }
+.stat-row { display: grid; grid-template-columns: 58px 30px 1fr; gap: 9px; align-items: center; margin: 15px 0; }.stat-name { color: #72768a; font-size: 10px; font-weight: 600; }.stat-value { color: var(--ink); font-size: 11px; font-weight: 700; }.stat-track { height: 7px; overflow: hidden; border-radius: 8px; background: #eceef2; }.stat-track span { display: block; height: 100%; border-radius: inherit; transition: width .4s ease; }
+.muted { color: var(--muted); font-size: 12px; }.evolution-list { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 5px; border-radius: 16px; background: #fafafd; }.evolution-item { display: flex; min-width: 0; flex: 1; flex-direction: column; align-items: center; gap: 4px; border: 0; background: transparent; color: var(--ink); }.evolution-item img { width: clamp(52px, 17vw, 94px); aspect-ratio: 1; object-fit: contain; }.evolution-item span { text-align: center; }.evolution-item strong, .evolution-item small { display: block; }.evolution-item strong { font-size: 10px; }.evolution-item small { margin-top: 3px; color: var(--muted); font-size: 9px; }.evolution-item ion-icon { margin-top: -78px; margin-right: -100%; color: #a2a6b5; font-size: 15px; }.evolution-empty { display: grid; min-height: 180px; place-content: center; justify-items: center; padding: 20px; border-radius: 16px; background: #fafafd; text-align: center; }.evo-ball { display: grid; width: 52px; height: 52px; place-items: center; border-radius: 18px; background: color-mix(in srgb, var(--type-color, #e8cb12) 17%, white); color: var(--type-color, #b59c00); font-size: 25px; }.evolution-empty p { max-width: 220px; margin: 14px 0 5px; color: #555a70; font-size: 12px; line-height: 1.5; }.evolution-empty small { max-width: 230px; color: #a0a3b0; font-size: 10px; line-height: 1.5; }
+.move-search { --background: #f7f8fa; --border-radius: 14px; --box-shadow: none; --icon-color: #9296a7; --placeholder-color: #9da0ae; min-height: 44px; margin: 0 0 11px; padding: 0; }.move-search::part(input) { font-size: 12px; }
+.move-list { max-height: 380px; overflow-y: auto; }.move-row { display: flex; min-height: 59px; align-items: center; gap: 12px; border-bottom: 1px solid #f0f1f4; }.move-index { display: grid; width: 31px; height: 31px; place-items: center; border-radius: 10px; background: #f4f5f8; color: #9498a9; font-size: 10px; }.move-copy { flex: 1; }.move-copy strong, .move-copy small { display: block; }.move-copy strong { color: #3a3e53; font-size: 12px; font-weight: 650; }.move-copy small { margin-top: 3px; color: #a1a4b1; font-size: 10px; }.move-chevron { color: #b1b3be; font-size: 15px; }.empty-state { padding: 22px 0; color: var(--muted); text-align: center; font-size: 12px; }
+.state-message { display: grid; min-height: 70vh; align-content: center; justify-items: center; gap: 10px; color: #73778a; font-size: 13px; }.state-message ion-spinner { color: #727fc4; }.error-message ion-icon { color: #d87373; font-size: 30px; }
+@media (min-width: 700px) { .detail-content { --background: #f5f5f1; }.hero { min-height: 435px; }.hero-top { width: min(100%, 700px); height: 345px; margin: auto; }.hero-heading { top: 48px; left: 7%; }.art-stage { inset: 55px 20% 0; }.pokemon-art { width: 300px; height: 300px; }.art-glow { width: 260px; height: 260px; }.hero-wave { bottom: 18px; height: 125px; }.hero-bottom { width: min(100%, 700px); margin: auto; }.detail-card { width: min(100% - 48px, 620px); margin: 0 auto 40px; padding-right: 28px; padding-left: 28px; }.tab-panel { padding-top: 24px; } }

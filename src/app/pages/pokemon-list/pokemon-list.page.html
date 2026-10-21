@@ -1,18 +1,90 @@
-<ion-header>
+<ion-header class="topbar">
   <ion-toolbar>
-    <ion-title>Pokémon List</ion-title>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/pokemon-list" text=""></ion-back-button></ion-buttons>
+    <ion-title>Pokédex</ion-title>
+    <ion-buttons slot="end"><ion-button routerLink="/pokemon-list" aria-label="Lista de Pokémon"><ion-icon name="grid-outline"></ion-icon></ion-button></ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-list>
-    <ion-item *ngFor="let pokemon of pokemons">
-      <ion-label>{{ pokemon.name | titlecase }}</ion-label>
-      <a href="{{ pokemon.url}}"><ion-label>{{ pokemon.url}}</ion-label></a>
-      
-    </ion-item>
-  
-  </ion-list>
+<ion-content [fullscreen]="true" class="detail-content">
+  <div class="pokemon-search-wrap">
+    <ion-searchbar [(ngModel)]="pokemonSearch" placeholder="Buscar Pokémon por nombre o número" class="pokemon-search" [debounce]="100" autocomplete="off"></ion-searchbar>
+    <div class="search-results" *ngIf="filteredPokemon.length">
+      <button class="search-result" *ngFor="let result of filteredPokemon" (click)="selectPokemon(result.id)">
+        <span class="result-number">#{{ result.id | number:'3.0-0' }}</span>
+        <span class="result-name">{{ result.name | titlecase }}</span>
+        <ion-icon name="arrow-forward-outline"></ion-icon>
+      </button>
+    </div>
+  </div>
+  <ng-container *ngIf="pokemon; else loadingState">
+    <section class="hero" [style.--type-color]="typeColor">
+      <div class="hero-top">
+        <span class="pokedex-label">POKÉDEX <b>#{{ pokemon.id | number:'3.0-0' }}</b></span>
+        <div class="hero-heading"><h1>{{ displayName }}</h1><span class="species">{{ primaryType | titlecase }} Pokémon</span></div>
+        <button class="nav-arrow previous" (click)="changePokemon(-1)" aria-label="Pokémon anterior"><ion-icon name="chevron-back"></ion-icon></button>
+        <button class="nav-arrow next" (click)="changePokemon(1)" aria-label="Pokémon siguiente"><ion-icon name="chevron-forward"></ion-icon></button>
+        <div class="art-stage">
+          <div class="art-glow"></div>
+          <img class="pokemon-art" [src]="pokemon.sprites.other?.['official-artwork']?.front_default || pokemon.sprites.front_default" [alt]="displayName" />
+        </div>
+      </div>
+      <div class="hero-wave"></div>
+      <div class="hero-bottom">
+        <div class="type-list"><span class="type-chip" *ngFor="let item of pokemon.types" [style.--chip-color]="typeColors[item.type.name] || typeColor">{{ item.type.name | titlecase }}</span></div>
+        <button class="sound-button" (click)="playCry()" aria-label="Reproducir grito"><ion-icon name="volume-high"></ion-icon></button>
+      </div>
+    </section>
 
-  <ion-spinner *ngIf="loading" class="loading-spinner"></ion-spinner>
+    <main class="detail-card">
+      <ion-segment class="detail-tabs" [value]="activeTab" (ionChange)="activeTab = $any($event.detail.value)">
+        <ion-segment-button value="about"><ion-label>About</ion-label></ion-segment-button>
+        <ion-segment-button value="stats"><ion-label>Stats</ion-label></ion-segment-button>
+        <ion-segment-button value="evolution"><ion-label>Evolution</ion-label></ion-segment-button>
+        <ion-segment-button value="moves"><ion-label>Moves</ion-label></ion-segment-button>
+      </ion-segment>
+
+      <section class="tab-panel" *ngIf="activeTab === 'about'">
+        <p class="flavor">{{ flavorText() }}</p>
+        <div class="about-grid">
+          <article class="info-tile"><span class="tile-icon"><ion-icon name="resize-outline"></ion-icon></span><div><small>Height</small><strong>{{ pokemon.height / 10 | number:'1.1-1' }} m</strong></div></article>
+          <article class="info-tile"><span class="tile-icon"><ion-icon name="barbell-outline"></ion-icon></span><div><small>Weight</small><strong>{{ pokemon.weight / 10 | number:'1.1-1' }} kg</strong></div></article>
+        </div>
+        <h2>Abilities</h2>
+        <div class="ability-list"><span class="ability-chip" *ngFor="let ability of pokemon.abilities">{{ ability.ability.name | titlecase }}<small *ngIf="ability.is_hidden"> · Hidden</small></span></div>
+        <div class="about-footer"><span>#{{ pokemon.id | number:'3.0-0' }}</span><span>{{ pokemon.base_experience || '—' }} base XP</span></div>
+      </section>
+
+      <section class="tab-panel" *ngIf="activeTab === 'stats'">
+        <div class="stats-total"><span>Base stats</span><strong>{{ totalStats(pokemon.stats) }} total</strong></div>
+        <div class="stat-row" *ngFor="let stat of pokemon.stats"><span class="stat-name">{{ statLabel(stat.stat.name) }}</span><span class="stat-value">{{ stat.base_stat }}</span><div class="stat-track"><span [style.width.%]="statPercent(stat.base_stat)" [style.background]="typeColor"></span></div></div>
+      </section>
+
+      <section class="tab-panel evolution-panel" *ngIf="activeTab === 'evolution'">
+        <h2>Evolution line</h2>
+        <p class="muted">Follow the evolution path</p>
+        <div class="evolution-list" *ngIf="evolutionChain.length">
+          <button class="evolution-item" *ngFor="let stage of evolutionChain; let last = last" (click)="router.navigate(['/pokemon-list', stage.id])">
+            <img [src]="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/' + stage.id + '.png'" [alt]="stage.name" />
+            <span><strong>{{ stage.name | titlecase }}</strong><small>#{{ stage.id | number:'3.0-0' }}</small></span>
+            <ion-icon *ngIf="!last" name="arrow-forward-outline"></ion-icon>
+          </button>
+        </div>
+        <div class="evolution-empty" *ngIf="!evolutionChain.length"><span class="evo-ball"><ion-icon name="sparkles-outline"></ion-icon></span><p>Loading evolution details…</p></div>
+      </section>
+
+      <section class="tab-panel moves-panel" *ngIf="activeTab === 'moves'">
+        <ion-searchbar [(ngModel)]="moveSearch" placeholder="Search moves by name or ID" class="move-search" [debounce]="0"></ion-searchbar>
+        <div class="move-list">
+          <article class="move-row" *ngFor="let entry of filteredMoves | slice:0:80; let i = index"><span class="move-index">{{ i + 1 | number:'2.0-0' }}</span><div class="move-copy"><strong>{{ entry.move.name | titlecase }}</strong><small>Move · #{{ moveId(entry.move.url) }}</small></div><ion-icon name="chevron-forward" class="move-chevron"></ion-icon></article>
+          <p class="empty-state" *ngIf="filteredMoves.length === 0">No moves match “{{ moveSearch }}”.</p>
+        </div>
+      </section>
+    </main>
+  </ng-container>
+
+  <ng-template #loadingState>
+    <div class="state-message" *ngIf="loading"><ion-spinner name="crescent"></ion-spinner><p>Loading Pokémon…</p></div>
+    <div class="state-message error-message" *ngIf="!loading && error"><ion-icon name="alert-circle-outline"></ion-icon><p>{{ error }}</p><ion-button (click)="loadPokemon('25')">Try again</ion-button></div>
+  </ng-template>
 </ion-content>
