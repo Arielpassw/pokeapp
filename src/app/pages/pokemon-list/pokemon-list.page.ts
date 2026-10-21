@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PokemonService } from 'src/app/services/pokemon.service';
+import { PokemonComparison, PokemonGalleryImage, PokemonService } from 'src/app/services/pokemon.service';
 
-type DetailTab = 'about' | 'stats' | 'evolution' | 'moves';
+type DetailTab = 'about' | 'stats' | 'evolution' | 'moves' | 'gallery' | 'compare';
 
 @Component({
   selector: 'app-pokemon-list',
@@ -15,9 +15,17 @@ export class PokemonListPage implements OnInit, OnDestroy {
   error = '';
   activeTab: DetailTab = 'about';
   moveSearch = '';
+  selectedMove: any;
+  moveLoading = false;
+  moveError = '';
   evolutionChain: any[] = [];
   allPokemon: any[] = [];
   pokemonSearch = '';
+  gallery: PokemonGalleryImage[] = [];
+  compareSearch = '';
+  comparison?: PokemonComparison;
+  comparing = false;
+  isDarkMode = false;
   private audio?: HTMLAudioElement;
   readonly typeColors: Record<string, string> = {
     electric: '#e8cb12', water: '#6d82cc', fire: '#ef795f', grass: '#78bd86',
@@ -34,6 +42,7 @@ export class PokemonListPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.isDarkMode = localStorage.getItem('pokeapp-theme') === 'dark';
     this.route.paramMap.subscribe(params => this.loadPokemon(params.get('id') || '25'));
     this.pokemonService.getPokemons(1025).subscribe({
       next: response => { this.allPokemon = response.results.map((item: any, index: number) => ({ ...item, id: index + 1 })); },
@@ -49,6 +58,34 @@ export class PokemonListPage implements OnInit, OnDestroy {
   selectPokemon(id: number): void {
     this.pokemonSearch = '';
     this.router.navigate(['/pokemon-list', id]);
+  }
+
+  setTab(tab: DetailTab): void {
+    this.activeTab = tab;
+    if (tab === 'gallery' && this.pokemon && !this.gallery.length) {
+      this.pokemonService.getPokemonGallery(this.pokemon.id).subscribe({ next: images => this.gallery = images });
+    }
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('pokeapp-theme', this.isDarkMode ? 'dark' : 'light');
+  }
+
+  get compareResults(): any[] {
+    const query = this.compareSearch.trim().toLowerCase();
+    if (!query) return [];
+    return this.allPokemon.filter(item => item.id !== this.pokemon?.id
+      && (item.name.includes(query) || String(item.id).includes(query))).slice(0, 6);
+  }
+
+  compareWith(candidate: any): void {
+    this.compareSearch = '';
+    this.comparing = true;
+    this.pokemonService.comparePokemons(this.pokemon.id, candidate.id).subscribe({
+      next: data => { this.comparison = data; this.comparing = false; },
+      error: () => { this.comparison = undefined; this.comparing = false; },
+    });
   }
 
   ngOnDestroy(): void {
@@ -75,6 +112,23 @@ export class PokemonListPage implements OnInit, OnDestroy {
       || String(entry.move.url.match(/\/move\/(\d+)/)?.[1] || '').includes(query));
   }
 
+  openMove(move: any): void {
+    this.selectedMove = undefined;
+    this.moveLoading = true;
+    this.moveError = '';
+    this.pokemonService.getMoveDetails(this.moveId(move.url)).subscribe({
+      next: data => { this.selectedMove = data; this.moveLoading = false; },
+      error: () => { this.moveError = 'No se pudo cargar la información del movimiento.'; this.moveLoading = false; },
+    });
+  }
+
+  moveDescription(move: any): string {
+    const entry = move?.effect_entries?.find((item: any) => item.language.name === 'en')
+      || move?.flavor_text_entries?.find((item: any) => item.language.name === 'en');
+    return (entry?.effect || entry?.flavor_text || 'No description available.')
+      .replace(/[\n\f]/g, ' ').replace(/\$effect_chance/g, String(move.effect_chance ?? ''));
+  }
+
   loadPokemon(id: string | number): void {
     this.loading = true;
     this.error = '';
@@ -83,6 +137,9 @@ export class PokemonListPage implements OnInit, OnDestroy {
         this.pokemon = data;
         this.loading = false;
         this.moveSearch = '';
+        this.selectedMove = undefined;
+        this.gallery = [];
+        this.comparison = undefined;
         this.evolutionChain = [];
         this.pokemonService.getPokemonSpecies(data.id).subscribe({
           next: species => {

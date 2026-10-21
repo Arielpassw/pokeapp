@@ -1,13 +1,16 @@
-<ion-header class="topbar">
+<ion-header class="topbar" [class.dark-theme]="isDarkMode">
   <ion-toolbar>
     <ion-buttons slot="start"><ion-back-button defaultHref="/pokemon-list" text=""></ion-back-button></ion-buttons>
     <ion-title>Pokédex</ion-title>
-    <ion-buttons slot="end"><ion-button routerLink="/pokemon-list" aria-label="Lista de Pokémon"><ion-icon name="grid-outline"></ion-icon></ion-button></ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleTheme()" [attr.aria-label]="isDarkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"><ion-icon [name]="isDarkMode ? 'sunny-outline' : 'moon-outline'"></ion-icon></ion-button>
+      <ion-button routerLink="/pokemon-list" aria-label="Lista de Pokémon"><ion-icon name="grid-outline"></ion-icon></ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="detail-content">
-  <div class="pokemon-search-wrap">
+<ion-content [fullscreen]="true" class="detail-content" [class.dark-theme]="isDarkMode">
+  <div class="pokemon-search-wrap" [class.dark-theme]="isDarkMode">
     <ion-searchbar [(ngModel)]="pokemonSearch" placeholder="Buscar Pokémon por nombre o número" class="pokemon-search" [debounce]="100" autocomplete="off"></ion-searchbar>
     <div class="search-results" *ngIf="filteredPokemon.length">
       <button class="search-result" *ngFor="let result of filteredPokemon" (click)="selectPokemon(result.id)">
@@ -18,7 +21,7 @@
     </div>
   </div>
   <ng-container *ngIf="pokemon; else loadingState">
-    <section class="hero" [style.--type-color]="typeColor">
+    <section class="hero" [class.dark-theme]="isDarkMode" [style.--type-color]="typeColor">
       <div class="hero-top">
         <span class="pokedex-label">POKÉDEX <b>#{{ pokemon.id | number:'3.0-0' }}</b></span>
         <div class="hero-heading"><h1>{{ displayName }}</h1><span class="species">{{ primaryType | titlecase }} Pokémon</span></div>
@@ -36,13 +39,15 @@
       </div>
     </section>
 
-    <main class="detail-card">
-      <ion-segment class="detail-tabs" [value]="activeTab" (ionChange)="activeTab = $any($event.detail.value)">
-        <ion-segment-button value="about"><ion-label>About</ion-label></ion-segment-button>
-        <ion-segment-button value="stats"><ion-label>Stats</ion-label></ion-segment-button>
-        <ion-segment-button value="evolution"><ion-label>Evolution</ion-label></ion-segment-button>
-        <ion-segment-button value="moves"><ion-label>Moves</ion-label></ion-segment-button>
-      </ion-segment>
+    <main class="detail-card" [class.dark-theme]="isDarkMode">
+      <nav class="detail-tabs" role="tablist" aria-label="Pokémon details" [style.--type-color]="typeColor">
+        <button class="detail-tab" role="tab" [attr.aria-selected]="activeTab === 'about'" [class.selected]="activeTab === 'about'" (click)="setTab('about')">About</button>
+        <button class="detail-tab" role="tab" [attr.aria-selected]="activeTab === 'stats'" [class.selected]="activeTab === 'stats'" (click)="setTab('stats')">Stats</button>
+        <button class="detail-tab" role="tab" [attr.aria-selected]="activeTab === 'evolution'" [class.selected]="activeTab === 'evolution'" (click)="setTab('evolution')">Evolution</button>
+        <button class="detail-tab" role="tab" [attr.aria-selected]="activeTab === 'moves'" [class.selected]="activeTab === 'moves'" (click)="setTab('moves')">Moves</button>
+        <button class="detail-tab" role="tab" [attr.aria-selected]="activeTab === 'gallery'" [class.selected]="activeTab === 'gallery'" (click)="setTab('gallery')">Gallery</button>
+        <button class="detail-tab" role="tab" [attr.aria-selected]="activeTab === 'compare'" [class.selected]="activeTab === 'compare'" (click)="setTab('compare')">Compare</button>
+      </nav>
 
       <section class="tab-panel" *ngIf="activeTab === 'about'">
         <p class="flavor">{{ flavorText() }}</p>
@@ -75,10 +80,64 @@
 
       <section class="tab-panel moves-panel" *ngIf="activeTab === 'moves'">
         <ion-searchbar [(ngModel)]="moveSearch" placeholder="Search moves by name or ID" class="move-search" [debounce]="0"></ion-searchbar>
+        <div class="move-detail-card" *ngIf="selectedMove as move">
+          <div class="move-detail-heading">
+            <div><span class="move-detail-kicker">MOVE #{{ move.id | number:'3.0-0' }}</span><h2>{{ move.name | titlecase }}</h2></div>
+            <ion-button fill="clear" size="small" (click)="selectedMove = undefined" aria-label="Close move details"><ion-icon slot="icon-only" name="close-outline"></ion-icon></ion-button>
+          </div>
+          <div class="move-tags"><span class="move-type-tag">{{ move.type.name | titlecase }}</span><span class="move-category-tag">{{ move.damage_class.name | titlecase }}</span></div>
+          <p class="move-description">{{ moveDescription(move) }}</p>
+          <div class="move-stat-grid">
+            <div><small>Power</small><strong>{{ move.power ?? '—' }}</strong></div>
+            <div><small>Accuracy</small><strong>{{ move.accuracy !== null ? move.accuracy + '%' : '—' }}</strong></div>
+            <div><small>PP</small><strong>{{ move.pp ?? '—' }}</strong></div>
+            <div><small>Priority</small><strong>{{ move.priority }}</strong></div>
+          </div>
+          <p class="move-side-effect" *ngIf="move.effect_chance">Secondary effect chance: {{ move.effect_chance }}%</p>
+        </div>
+        <div class="inline-loading" *ngIf="moveLoading"><ion-spinner name="crescent"></ion-spinner><span>Loading move details…</span></div>
+        <p class="move-load-error" *ngIf="moveError">{{ moveError }}</p>
         <div class="move-list">
-          <article class="move-row" *ngFor="let entry of filteredMoves | slice:0:80; let i = index"><span class="move-index">{{ i + 1 | number:'2.0-0' }}</span><div class="move-copy"><strong>{{ entry.move.name | titlecase }}</strong><small>Move · #{{ moveId(entry.move.url) }}</small></div><ion-icon name="chevron-forward" class="move-chevron"></ion-icon></article>
+          <button class="move-row" *ngFor="let entry of filteredMoves | slice:0:80; let i = index" (click)="openMove(entry.move)"><span class="move-index">{{ i + 1 | number:'2.0-0' }}</span><div class="move-copy"><strong>{{ entry.move.name | titlecase }}</strong><small>Move · #{{ moveId(entry.move.url) }}</small></div><ion-icon name="chevron-forward" class="move-chevron"></ion-icon></button>
           <p class="empty-state" *ngIf="filteredMoves.length === 0">No moves match “{{ moveSearch }}”.</p>
         </div>
+      </section>
+
+      <section class="tab-panel gallery-panel" *ngIf="activeTab === 'gallery'">
+        <h2>Image gallery</h2>
+        <p class="muted">Artwork and sprite variations for {{ displayName }}.</p>
+        <div class="gallery-grid" *ngIf="gallery.length; else galleryLoading">
+          <figure class="gallery-image" *ngFor="let image of gallery">
+            <img [src]="image.url" [alt]="displayName + ' — ' + image.label" loading="lazy" />
+            <figcaption>{{ image.label }}<small>{{ image.format | uppercase }}<span *ngIf="image.animated"> · Animated</span></small></figcaption>
+          </figure>
+        </div>
+        <ng-template #galleryLoading><div class="inline-loading"><ion-spinner name="crescent"></ion-spinner><span>Loading images…</span></div></ng-template>
+        <p class="muted" *ngIf="gallery.length && gallery.length < 5">PokéAPI provides {{ gallery.length }} images for this Pokémon.</p>
+      </section>
+
+      <section class="tab-panel compare-panel" *ngIf="activeTab === 'compare'">
+        <h2>Compare Pokémon</h2>
+        <p class="muted">Choose another Pokémon to compare its stats and measurements.</p>
+        <div class="compare-search-wrap">
+          <ion-searchbar [(ngModel)]="compareSearch" placeholder="Search a Pokémon by name or number" class="compare-search" [debounce]="100" autocomplete="off"></ion-searchbar>
+          <div class="compare-results" *ngIf="compareResults.length">
+            <button class="search-result" *ngFor="let candidate of compareResults" (click)="compareWith(candidate)">
+              <span class="result-number">#{{ candidate.id | number:'3.0-0' }}</span><span class="result-name">{{ candidate.name | titlecase }}</span><ion-icon name="git-compare-outline"></ion-icon>
+            </button>
+          </div>
+        </div>
+        <div class="inline-loading" *ngIf="comparing"><ion-spinner name="crescent"></ion-spinner><span>Comparing Pokémon…</span></div>
+        <ng-container *ngIf="comparison as result">
+          <div class="compare-pokemon-cards">
+            <article class="compare-pokemon"><img [src]="result.pokemon1.sprites.other?.['official-artwork']?.front_default || result.pokemon1.sprites.front_default" [alt]="result.pokemon1.name" /><strong>{{ result.pokemon1.name | titlecase }}</strong><small>#{{ result.pokemon1.id | number:'3.0-0' }}</small></article>
+            <span class="versus">VS</span>
+            <article class="compare-pokemon"><img [src]="result.pokemon2.sprites.other?.['official-artwork']?.front_default || result.pokemon2.sprites.front_default" [alt]="result.pokemon2.name" /><strong>{{ result.pokemon2.name | titlecase }}</strong><small>#{{ result.pokemon2.id | number:'3.0-0' }}</small></article>
+          </div>
+          <div class="compare-types"><div><small>Types</small><span>{{ result.types.pokemon1.join(', ') | titlecase }}</span></div><div><small>Types</small><span>{{ result.types.pokemon2.join(', ') | titlecase }}</span></div></div>
+          <div class="comparison-stat" *ngFor="let stat of result.stats"><div class="comparison-values"><span>{{ stat.pokemon1 }}</span><strong>{{ stat.name | titlecase }}</strong><span>{{ stat.pokemon2 }}</span></div><div class="comparison-track"><span class="first-stat" [style.width.%]="statPercent(stat.pokemon1)" [style.background]="typeColor"></span><span class="second-stat" [style.width.%]="statPercent(stat.pokemon2)" [style.background]="typeColors[result.types.pokemon2[0]] || '#8793b8'"></span></div></div>
+          <div class="compare-measurements"><div><small>Height</small><strong>{{ result.measurements.heightMeters.pokemon1 }} m</strong><strong>{{ result.measurements.heightMeters.pokemon2 }} m</strong></div><div><small>Weight</small><strong>{{ result.measurements.weightKilograms.pokemon1 }} kg</strong><strong>{{ result.measurements.weightKilograms.pokemon2 }} kg</strong></div></div>
+        </ng-container>
       </section>
     </main>
   </ng-container>

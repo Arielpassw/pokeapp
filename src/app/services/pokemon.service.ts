@@ -39,6 +39,10 @@ export class PokemonService {
     return this.http.get(`${this.apiUrl}/pokemon/${nameOrId}`);
   }
 
+  getMoveDetails(nameOrId: string | number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/move/${nameOrId}`);
+  }
+
   getPokemonSpecies(nameOrId: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/pokemon-species/${nameOrId}`);
   }
